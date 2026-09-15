@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swift-syntax-learn}",
+            "name": "Debug swift-syntax-learn",
+            "target": "swift-syntax-learn",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug swift-syntax-learn"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swift-syntax-learn}",
+            "name": "Release swift-syntax-learn",
+            "target": "swift-syntax-learn",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release swift-syntax-learn"
+        }
+    ]
+}
