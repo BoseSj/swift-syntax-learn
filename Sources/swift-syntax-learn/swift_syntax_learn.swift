@@ -35,12 +35,12 @@ struct swift_syntax_learn {
     }
 
     /// Function Syntax Structure
-    /// [x] Detecting Closure expressions
+    /// [x] Detecting Functionc all expressions
+    /// [x] Detecting trailing Closure expression
     /// [ ] Get paramete names and types
     ///     [x] Done for ClosureParameterList, eg. ... (num: Int, decinum: Float) in ...
     ///     [ ] Need to do for ClosureShorthandParameterList, eg. ...  num, decinum in ...
     /// [ ] Get body
-    /// [ ] Get attribute type list
     /// [ ] Get return type
     func convertClosueToFunction(_ contents: String) -> SourceFileSyntax {
         let parsed = Parser.parse(source: contents)
@@ -97,6 +97,8 @@ struct swift_syntax_learn {
                 }
             case let .simpleInput(syntax):
                 print("simpleInput: \(syntax)")
+                print(syntax.id)
+                
             }
         }
     }
