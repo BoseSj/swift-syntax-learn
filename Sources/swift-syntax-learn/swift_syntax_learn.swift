@@ -8,13 +8,21 @@
 /// Separate declaration based on statement type
 
 import Foundation
-/// oky whatever
 import SwiftParser
 import SwiftSyntax
 
 @main
 struct swift_syntax_learn {
     static func main() {
+        func doSome(clos: (Int) -> Int) {
+            let num = clos(1)
+            print(num)
+        }
+
+        doSome(clos: { num in
+            num + 1
+        })
+
         guard CommandLine.arguments.count == 2 else {
             print("not enough arguments")
             return
@@ -75,32 +83,82 @@ struct swift_syntax_learn {
                 }
             }
 
-        if let parameterClause = functions.first?
-            .trailingClosure?
-            .signature?
-            .parameterClause
+        // if let returnType = functions.first?.trailingClosure?.signature?.returnClause?.type {
+        //     print("returnType")
+        //     print(returnType)
+        // }
+
+        if let closure = functions.first?
+            .trailingClosure,
+            let parameterClause = closure
+                .signature?
+                .parameterClause
         {
-            print("parameterClause")
-            print(parameterClause)
+            // print("parameterClause")
+            // print(parameterClause)
 
             switch parameterClause {
             case let .parameterClause(syntax):
-                print("parameterClause type: \(syntax)")
-                syntax.parameters.forEach { param in
-                    print("param firstName")
-                    print(param.firstName)
-                    if let type = param.type {
-                        print("param.type")
-                        print(type)
-                    }
-                    print()
+                // print("parameterClause type: \(syntax)")
+                // syntax.parameters.forEach { param in
+                //     print("param firstName")
+                //     print(param.firstName)
+                //     if let type = param.type {
+                //         print("param.type")
+                //         print(type)
+                //     }
+                //     print()
+                // }
+
+                let parameters = syntax
+                .parameters.compactMap({ syt in
+                        if let type = syt.type {
+                            let trailingComma: TokenSyntax? =  if syntax.parameters.last != syt {
+                                .commaToken(trailingTrivia: .space)
+                            } else {
+                                nil
+                            }
+
+                            return FunctionParameterSyntax(
+                                    firstName: syt.firstName, 
+                                    colon: .colonToken(trailingTrivia: .space), type: type,
+                                    trailingComma: trailingComma
+                            )
+                        } else {
+                            return nil
+                        }
+                })
+
+                guard let returnType = closure.signature?.returnClause?.type else {
+                    fatalError("return type not found")
                 }
+                let newFunction = FunctionDeclSyntax(
+                    name: .identifier(" <#name#>"),
+                    signature: FunctionSignatureSyntax(
+                        parameterClause: FunctionParameterClauseSyntax(
+                            parameters: FunctionParameterListSyntax(parameters)
+                        ),
+                        effectSpecifiers: FunctionEffectSpecifiersSyntax(),
+                        returnClause: ReturnClauseSyntax(
+                            arrow: .arrowToken(leadingTrivia: .space, trailingTrivia: .space),
+                            type: returnType)
+                    ),
+                    body: CodeBlockSyntax(
+                        leftBrace: .leftBraceToken(leadingTrivia: .space),
+                        statements: closure.statements,
+                        rightBrace: .rightBraceToken(leadingTrivia: .newline)
+                    )
+                )
+                print("newFunction")
+                print(newFunction)
             case let .simpleInput(syntax):
                 print("simpleInput: \(syntax)")
                 print(syntax.id)
-                
+
             }
         }
+
+        
     }
 
     func format(_ contents: String) -> SourceFileSyntax {

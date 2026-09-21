@@ -8,12 +8,14 @@ func dosome(_ something: (Int, Float) -> (String)) {
   something()
 }
 
+dosome { (num: Int, decinum: Float) -> Void in
+  return "Hello: \(num)"
+}
+
 dosome { num, decinum in
   return "Hello: \(num)"
 }
-dosome { (num: Int, decinum: Float) in
-  return "Hello: \(num)"
-}
+
 
 func hello() {
   print("hello")
