@@ -38,127 +38,30 @@ struct swift_syntax_learn {
             return
         }
 
-        let formatted = Self().convertClosueToFunction(contents)
-        print(formatted)
+        Self().convertClosueToFunction(contents)
+        // let formatted = Self().convertClosueToFunction(contents)
+        // print(formatted)
     }
 
-    /// Function Syntax Structure
-    /// [x] Detecting Functionc all expressions
-    /// [x] Detecting trailing Closure expression
-    /// [ ] Get paramete names and types
-    ///     [x] Done for ClosureParameterList, eg. ... (num: Int, decinum: Float) in ...
-    ///     [ ] Need to do for ClosureShorthandParameterList, eg. ...  num, decinum in ...
-    /// [ ] Get body
-    /// [ ] Get return type
-    func convertClosueToFunction(_ contents: String) -> SourceFileSyntax {
+    func convertClosueToFunction(_ contents: String) {
         let parsed = Parser.parse(source: contents)
-        let functionCodes = parsed
+        parsed
             .statements
-            .filter { statement in
-                if case let .expr(expr) = statement.item,
-                    expr.as(FunctionCallExprSyntax.self) != nil
-                {
-                    return true
-                } else {
-                    return false
-                }
-            }
-        self.parseFunctionExpression(expr: functionCodes)
-
-        return
-            parsed
-            .with(\.statements, functionCodes)
-    }
-
-    func parseFunctionExpression(expr: CodeBlockItemListSyntax) {
-        let functions =
-            expr
             .compactMap { statement in
                 if case let .expr(expr) = statement.item,
-                    let call = expr.as(FunctionCallExprSyntax.self)
+                    let function = expr.as(FunctionCallExprSyntax.self)
                 {
-                    return call
+                    return function
+                        .trailingClosure
                 } else {
                     return nil
                 }
             }
-
-        // if let returnType = functions.first?.trailingClosure?.signature?.returnClause?.type {
-        //     print("returnType")
-        //     print(returnType)
-        // }
-
-        if let closure = functions.first?
-            .trailingClosure,
-            let parameterClause = closure
-                .signature?
-                .parameterClause
-        {
-            // print("parameterClause")
-            // print(parameterClause)
-
-            switch parameterClause {
-            case let .parameterClause(syntax):
-                // print("parameterClause type: \(syntax)")
-                // syntax.parameters.forEach { param in
-                //     print("param firstName")
-                //     print(param.firstName)
-                //     if let type = param.type {
-                //         print("param.type")
-                //         print(type)
-                //     }
-                //     print()
-                // }
-
-                let parameters = syntax
-                .parameters.compactMap({ syt in
-                        if let type = syt.type {
-                            let trailingComma: TokenSyntax? =  if syntax.parameters.last != syt {
-                                .commaToken(trailingTrivia: .space)
-                            } else {
-                                nil
-                            }
-
-                            return FunctionParameterSyntax(
-                                    firstName: syt.firstName, 
-                                    colon: .colonToken(trailingTrivia: .space), type: type,
-                                    trailingComma: trailingComma
-                            )
-                        } else {
-                            return nil
-                        }
-                })
-
-                guard let returnType = closure.signature?.returnClause?.type else {
-                    fatalError("return type not found")
-                }
-                let newFunction = FunctionDeclSyntax(
-                    name: .identifier(" <#name#>"),
-                    signature: FunctionSignatureSyntax(
-                        parameterClause: FunctionParameterClauseSyntax(
-                            parameters: FunctionParameterListSyntax(parameters)
-                        ),
-                        effectSpecifiers: FunctionEffectSpecifiersSyntax(),
-                        returnClause: ReturnClauseSyntax(
-                            arrow: .arrowToken(leadingTrivia: .space, trailingTrivia: .space),
-                            type: returnType)
-                    ),
-                    body: CodeBlockSyntax(
-                        leftBrace: .leftBraceToken(leadingTrivia: .space),
-                        statements: closure.statements,
-                        rightBrace: .rightBraceToken(leadingTrivia: .newline)
-                    )
-                )
-                print("newFunction")
-                print(newFunction)
-            case let .simpleInput(syntax):
-                print("simpleInput: \(syntax)")
-                print(syntax.id)
-
-            }
-        }
-
-        
+            .forEach({ blockItem in 
+                let function = ConvertClosureToFunction().parse(blockItem)
+                print("function")
+                print(function)
+            })
     }
 
     func format(_ contents: String) -> SourceFileSyntax {

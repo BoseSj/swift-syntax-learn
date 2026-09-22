@@ -13,7 +13,8 @@ dosome { (num: Int, decinum: Float) -> Void in
 }
 
 dosome { num, decinum in
-  return "Hello: \(num)"
+  let val = "Hello: \(num)"
+  return val
 }
 
 
